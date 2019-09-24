@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -25,10 +26,10 @@ namespace Piscolapp
 
             List<Picture> pictures = new List<Picture>();
             List<Album> albums = new List<Album>();
-;
 
             while (runningApp)
             {
+                loadApplicationData();
                 Console.Clear();
                 System.Console.WriteLine(appTitle);
                 System.Console.WriteLine("");
@@ -49,6 +50,9 @@ namespace Piscolapp
                     case 1:
                         addPictures();
                         break;
+                    case 2:
+                        addNewAlbum();
+                        break;
                     case 3:
                         loadPictures();
                         break;
@@ -66,6 +70,35 @@ namespace Piscolapp
 
             }
 
+
+            void loadApplicationData()
+            {
+                using (StreamReader r = new StreamReader("ddbb.json"))
+                {
+                    string json = r.ReadToEnd();
+                    Dictionary<string, dynamic> jsonData = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(json);
+
+                    foreach (var data in jsonData["albums"])
+                    {
+                        string albumName = data.name.ToObject<string>();
+                        Album album = new Album(albumName, new DateTime());
+                        albums.Add(album);
+                    }
+                }
+            }
+
+            void addNewAlbum()
+            {
+                /*
+                System.Console.WriteLine("Escribe el nombre de tu nuevo almbum...");
+                string albumName = System.Console.ReadLine();
+                Album album = new Album(albumName, new DateTime());
+                Console.Clear();
+                System.Console.WriteLine("Album agregado correctamente...");
+                System.Threading.Thread.Sleep(1500);
+                */
+            }
+
             void loadPictures()
             {
                 System.Console.WriteLine("Presiona cualquier tecla para salir...");
@@ -78,8 +111,10 @@ namespace Piscolapp
 
             void loadAlbums()
             {
-                Album album1 = new Album("Prueba", new DateTime());
-                System.Console.WriteLine(album1.getName());
+                foreach(Album album in albums)
+                {
+                    System.Console.WriteLine(album.getName());
+                }
                 System.Console.ReadLine();
             }
 
@@ -87,7 +122,7 @@ namespace Piscolapp
             {
                 System.Console.WriteLine("Ingrese el path de su imagen...");
                 string path = System.Console.ReadLine();
-
+                // Agregar exeptions
                 //C:\Users\gonzalo\Desktop\Imagenes
                 if (path.Length > 0)
                 {

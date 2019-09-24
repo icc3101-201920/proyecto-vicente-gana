@@ -1,0 +1,12 @@
+{
+    "photos": [
+        {
+            "id": 0,
+            "path": "/algo"
+        }
+    ],
+    "albums": {
+        "id": 0,
+        "name": "Prueba1"
+    }
+}
