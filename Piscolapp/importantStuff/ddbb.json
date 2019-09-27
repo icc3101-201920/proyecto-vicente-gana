@@ -1,0 +1,38 @@
+{
+  "metaData": {
+    "albumLastId": 1,
+    "photoLastId": 3
+  },
+  "photos": [
+    {
+      "id": 1,
+      "path": "images/1.jpeg"
+    },
+    {
+      "id": 2,
+      "path": "images/2.jpeg"
+    },
+    {
+      "id": 3,
+      "path": "images/3.jpeg"
+    }
+  ],
+  "albums": [
+    {
+      "id": 0,
+      "name": "Prueba1",
+      "photos": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": 1,
+      "name": "Gonzalo!",
+      "photos": [
+        3,
+        1
+      ]
+    }
+  ]
+}
