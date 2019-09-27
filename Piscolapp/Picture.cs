@@ -17,6 +17,14 @@ namespace Piscolapp
             this.imageBitmap = imageBitmap;
         }
 
+        public Bitmap ImageBitmap
+        {
+            get
+            {
+                return this.imageBitmap;
+            }
+        }
+
 
         public static void ConsoleWritePixel(Color cValue)
         {

@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 
 namespace Piscolapp
@@ -10,7 +12,7 @@ namespace Piscolapp
     {
         static void Main(string[] args)
         {
-            List<string> menuItems = new List<string>() { "Agregar fotos", "Agregar Album", "Ver fotos","Ver Albums", "Salir" };
+            List<string> menuItems = new List<string>() { "Agregar fotos", "Agregar Album", "Ver fotos", "Ver Albums", "Salir" };
             Boolean runningApp = true;
 
             string appTitle = @"
@@ -26,10 +28,10 @@ namespace Piscolapp
 
             List<Picture> pictures = new List<Picture>();
             List<Album> albums = new List<Album>();
+            loadApplicationData();
 
             while (runningApp)
             {
-                loadApplicationData();
                 Console.Clear();
                 System.Console.WriteLine(appTitle);
                 System.Console.WriteLine("");
@@ -73,6 +75,8 @@ namespace Piscolapp
 
             void loadApplicationData()
             {
+                albums.Clear();
+                pictures.Clear();
                 using (StreamReader r = new StreamReader("ddbb.json"))
                 {
                     string json = r.ReadToEnd();
@@ -84,25 +88,47 @@ namespace Piscolapp
                         Album album = new Album(albumName, new DateTime());
                         albums.Add(album);
                     }
+
+                    foreach (var data in jsonData["photos"])
+                    {
+                        int pictureId = data.id.ToObject<int>();
+                        string picturePath = data.path.ToObject<string>();
+                        Picture picture = new Picture(pictureId, new Bitmap($@"{picturePath}"));
+                        pictures.Add(picture);
+                    }
                 }
             }
 
             void addNewAlbum()
             {
-                /*
-                System.Console.WriteLine("Escribe el nombre de tu nuevo almbum...");
-                string albumName = System.Console.ReadLine();
-                Album album = new Album(albumName, new DateTime());
-                Console.Clear();
-                System.Console.WriteLine("Album agregado correctamente...");
-                System.Threading.Thread.Sleep(1500);
-                */
+                StreamReader r = new StreamReader("ddbb.json");
+                string json = r.ReadToEnd();
+                JObject rss = JObject.Parse(json);
+                JArray item = (JArray)rss["albums"];
+                JObject metaData = (JObject)rss["metaData"];
+
+                System.Console.Write("Elige el nombre del album: ");
+                string newAlbumName = System.Console.ReadLine();
+
+                Dictionary<string, dynamic> newAlbumData = new Dictionary<string, dynamic>();
+                newAlbumData["id"] = (int)metaData["albumLastId"] + 1;
+                newAlbumData["name"] = newAlbumName;
+                
+                item.Add(JObject.FromObject(newAlbumData));
+
+                r.Close();
+                metaData["albumLastId"] = (int)metaData["albumLastId"] + 1;
+                File.WriteAllText(@"ddbb.json", rss.ToString());
+
+                loadApplicationData();
+                System.Console.WriteLine("Album agregado correctamente");
+                System.Console.ReadLine();
             }
 
             void loadPictures()
             {
                 System.Console.WriteLine("Presiona cualquier tecla para salir...");
-                foreach(Picture picture in pictures)
+                foreach (Picture picture in pictures)
                 {
                     picture.ConsoleWriteImage();
                 }
@@ -111,7 +137,7 @@ namespace Piscolapp
 
             void loadAlbums()
             {
-                foreach(Album album in albums)
+                foreach (Album album in albums)
                 {
                     System.Console.WriteLine(album.getName());
                 }
@@ -126,11 +152,28 @@ namespace Piscolapp
                 //C:\Users\gonzalo\Desktop\Imagenes
                 if (path.Length > 0)
                 {
-                    Random random = new Random();
-                    Picture picture = new Picture(random.Next(0, 100000),new Bitmap($@"{path}"));
-                    pictures.Add(picture);
+                    StreamReader r = new StreamReader("ddbb.json");
+                    string json = r.ReadToEnd();
+                    JObject rss = JObject.Parse(json);
+                    JArray item = (JArray)rss["photos"];
+                    JObject metaData = (JObject)rss["metaData"];
+
+                    Dictionary<string, dynamic> newPictureData = new Dictionary<string, dynamic>();
+                    newPictureData["id"] = (int)metaData["photoLastId"] + 1;
+                    newPictureData["path"] = $"images/{(int)metaData["photoLastId"] + 1}.jpeg";
+
+                    Bitmap imageBitmap = new Bitmap($@"{path}");
+                    imageBitmap.Save($"images/{(int)metaData["photoLastId"] + 1}.jpeg", ImageFormat.Jpeg);
+
+                    item.Add(JObject.FromObject(newPictureData));
+
+                    r.Close();
+                    metaData["photoLastId"] = (int)metaData["photoLastId"] + 1;
+                    File.WriteAllText(@"ddbb.json", rss.ToString());
+
+                    loadApplicationData();
                     System.Console.WriteLine("Imagen agregada correctamente...");
-                    System.Threading.Thread.Sleep(1500);
+                    System.Console.ReadLine();
                 }
                 else
                 {
