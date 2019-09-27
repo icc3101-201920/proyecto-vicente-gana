@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 
 namespace Piscolapp
@@ -25,6 +27,33 @@ namespace Piscolapp
             }
         }
 
+        public int ID
+        {
+            get
+            {
+                return this.Id;
+            }
+        }
+
+        public void addText(string text)
+        {
+            Bitmap newBitmap = new Bitmap(this.imageBitmap);
+            this.imageBitmap.Dispose();
+            Graphics graphicsImage = Graphics.FromImage(newBitmap);
+
+            Color StringColor = System.Drawing.ColorTranslator.FromHtml("#933eea");
+
+            StringFormat stringformat = new StringFormat();
+            stringformat.Alignment = StringAlignment.Center;
+            stringformat.LineAlignment = StringAlignment.Center;
+
+            graphicsImage.DrawString(text, new Font("arial", 40, FontStyle.Regular), new SolidBrush(StringColor), new Point(268, 245),
+            stringformat);
+
+            this.imageBitmap = newBitmap;
+            File.Delete($"images/{this.Id}.jpeg");
+            newBitmap.Save($"images/{this.Id}.jpeg", ImageFormat.Jpeg);
+        }
 
         public static void ConsoleWritePixel(Color cValue)
         {

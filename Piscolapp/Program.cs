@@ -93,7 +93,8 @@ namespace Piscolapp
                     {
                         int pictureId = data.id.ToObject<int>();
                         string picturePath = data.path.ToObject<string>();
-                        Picture picture = new Picture(pictureId, new Bitmap($@"{picturePath}"));
+                        Bitmap imageBitMap = new Bitmap($@"{picturePath}");
+                        Picture picture = new Picture(pictureId, imageBitMap);
                         pictures.Add(picture);
                     }
                 }
@@ -127,12 +128,33 @@ namespace Piscolapp
 
             void loadPictures()
             {
-                System.Console.WriteLine("Presiona cualquier tecla para salir...");
+                System.Console.WriteLine("Presiona q para salir o escribe un id para agregar texto a una imagen...");
                 foreach (Picture picture in pictures)
                 {
                     picture.ConsoleWriteImage();
                 }
-                System.Console.ReadLine();
+                string userAnswer = System.Console.ReadLine();
+
+                if (userAnswer == "q")
+                {
+                    { }
+                } else
+                {
+                    int pictureId = Int32.Parse(userAnswer);
+                    System.Console.WriteLine("¿Que texto le quieres agregar?: ");
+                    string text = System.Console.ReadLine();
+
+                    foreach (Picture picture in pictures)
+                    {
+                        if(picture.ID == pictureId)
+                        {
+                            picture.addText(text);
+                        }
+                    }
+                    System.Console.WriteLine("Texto agregado correctamente...");
+                    loadApplicationData();
+                    System.Console.ReadLine();
+                }
             }
 
             void loadAlbums()
