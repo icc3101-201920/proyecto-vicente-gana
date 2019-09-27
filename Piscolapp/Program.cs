@@ -85,7 +85,11 @@ namespace Piscolapp
                     foreach (var data in jsonData["albums"])
                     {
                         string albumName = data.name.ToObject<string>();
-                        Album album = new Album(albumName, new DateTime());
+                        int albumId = data.id.ToObject<int>();
+
+                        List<int> albumPictures = data.photos.ToObject<List<int>>();
+
+                        Album album = new Album(albumId, albumName, new DateTime(), albumPictures);
                         albums.Add(album);
                     }
 
@@ -114,7 +118,9 @@ namespace Piscolapp
                 Dictionary<string, dynamic> newAlbumData = new Dictionary<string, dynamic>();
                 newAlbumData["id"] = (int)metaData["albumLastId"] + 1;
                 newAlbumData["name"] = newAlbumName;
-                
+                newAlbumData["photos"] = new JArray();
+
+
                 item.Add(JObject.FromObject(newAlbumData));
 
                 r.Close();
@@ -151,6 +157,7 @@ namespace Piscolapp
                             picture.addText(text);
                         }
                     }
+
                     System.Console.WriteLine("Texto agregado correctamente...");
                     loadApplicationData();
                     System.Console.ReadLine();
@@ -159,11 +166,72 @@ namespace Piscolapp
 
             void loadAlbums()
             {
+                System.Console.WriteLine("Presiona q para salir, a para agregar una imagen a un album o escribe un id para ver el album...");
+
                 foreach (Album album in albums)
                 {
-                    System.Console.WriteLine(album.getName());
+                    System.Console.WriteLine($"({album.getId()}) {album.getName()}");
                 }
-                System.Console.ReadLine();
+                string userAswer = System.Console.ReadLine();
+
+                if (userAswer == "q")
+                {
+                    { }
+                } else if(userAswer == "a")
+                {
+                    System.Console.WriteLine("¿Que foto quieres agregar? :");
+                    int userPicture = Int32.Parse(System.Console.ReadLine());
+
+                    System.Console.WriteLine("¿A que album? :");
+                    int userAlbum = Int32.Parse(System.Console.ReadLine());
+
+                    StreamReader r = new StreamReader("ddbb.json");
+                    string json = r.ReadToEnd();
+                    JObject rss = JObject.Parse(json);
+                    JArray item = (JArray)rss["albums"];
+
+                    foreach(JObject album in item)
+                    {
+                        if(album["id"].ToObject<int>() == userAlbum)
+                        {
+
+                            JArray photos = (JArray)album["photos"];
+                            photos.Add(userPicture);
+
+                        }
+                    }
+
+                    r.Close();
+                    File.WriteAllText(@"ddbb.json", rss.ToString());
+
+                    loadApplicationData();
+                    System.Console.WriteLine("Foto agregada a album correctamente");
+                    System.Console.ReadLine();
+                }
+                else
+                {
+                    int albumId = Int32.Parse(userAswer);
+                    Console.Clear();
+
+                    foreach (Album album in albums)
+                    {
+                        if(album.getId() == albumId)
+                        {
+                            foreach(int pictureId in album.getPictures())
+                            {
+                                foreach(Picture picture in pictures)
+                                {
+                                    if(picture.ID == pictureId)
+                                    {
+                                        picture.ConsoleWriteImage();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    System.Console.WriteLine("Presione cualquier letra para salir...");
+                    System.Console.ReadLine();
+                }
             }
 
             void addPictures()
